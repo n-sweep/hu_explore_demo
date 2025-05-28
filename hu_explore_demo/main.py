@@ -1,5 +1,5 @@
 import streamlit as st
-from streamlit_poc.clinical_trial_protocol_extractor.extractor_core import
+from hu_explore_demo.clinical_trial_protocol_extractor.extractor_core import *
 
 st.title('Streamlit POC')
 

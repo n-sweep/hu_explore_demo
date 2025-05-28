@@ -54,6 +54,7 @@
 
       overrides = {
         pyperclip = { setuptools = []; };
+        pylatex = { setuptools = []; };
       };
 
     in
