@@ -1,5 +1,12 @@
+from dotenv import load_dotenv
 import streamlit as st
-from hu_explore_demo.clinical_trial_protocol_extractor.extractor_core import *
+
+load_dotenv()
+
+from clinical_trial_protocol_extractor.extractor_core import process_pdf_to_xml
+
+print(' i am in hell')
+
 
 st.title('Streamlit POC')
 

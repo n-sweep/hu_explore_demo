@@ -12,10 +12,14 @@ def main():
         "AWS_DEFAULT_REGION": 'us-east-1'
     }
 
-    with open('./.env', 'r+') as f:
+    with open('./.env', 'r') as f:
         vars = {(l:=line.split('='))[0]: l[1] for line in f.readlines()}
-        vars.update(keys)
-        f.writelines([f'{k}={v}' for k, v in vars.items()])
+
+    vars.update(keys)
+
+    with open('./.env', 'w') as f:
+        lines = [f'{k}={v}' for k, v in vars.items()]
+        f.write('\n'.join(lines))
 
 
 if __name__ == '__main__':
