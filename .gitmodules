@@ -1,0 +1,6 @@
+[submodule "streamlit_poc/clinical_trial_protocol_extractor"]
+	path = streamlit_poc/clinical_trial_protocol_extractor
+	url = https://github.com/Health-Universe/HealthUniverse_clinical_trial_protocol_extractor
+[submodule "hu_explore_demo/clinical_trial_protocol_extractor"]
+	path = hu_explore_demo/clinical_trial_protocol_extractor
+	url = https://github.com/Health-Universe/HealthUniverse_clinical_trial_protocol_extractor

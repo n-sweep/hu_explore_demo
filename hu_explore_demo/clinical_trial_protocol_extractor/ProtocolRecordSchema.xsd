@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- 
+  ProtocolRecordSchema.xsd - XML Schema for electronic transfer of 
+  protocol information into the ClinicalTrials.gov Protocol Registration 
+  System.
+-->
+<xs:schema  
+    targetNamespace="http://clinicaltrials.gov/prs" 
+    xmlns:prs="http://clinicaltrials.gov/prs" 
+    xmlns:rrs="http://clinicaltrials.gov/rrs"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <!-- Simplified schema for demonstration purposes -->
+  <xs:element name="study_collection" type="prs:StudyCollection"/>
+  <xs:complexType name="StudyCollection">
+    <xs:sequence>
+      <xs:element name="clinical_study" type="prs:ClinicalStudy" minOccurs="1" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ClinicalStudy">
+    <xs:sequence>
+      <xs:element name="id_info" type="prs:IdInfo" />
+      <xs:element name="brief_title" type="xs:string" minOccurs="0" />
+      <xs:element name="official_title" type="xs:string" minOccurs="0" />
+      <xs:element name="sponsors" type="prs:Sponsors" minOccurs="0" />
+      <xs:element name="brief_summary" type="prs:TextBlock" minOccurs="0" />
+      <xs:element name="detailed_description" type="prs:TextBlock" minOccurs="0" />
+      <xs:element name="overall_status" type="xs:string" minOccurs="0" />
+      <xs:element name="start_date" type="xs:string" minOccurs="0" />
+      <xs:element name="start_date_type" type="xs:string" minOccurs="0" />
+      <xs:element name="study_design" type="prs:StudyDesign" minOccurs="0" />
+      <xs:element name="condition" type="xs:string" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="intervention" type="prs:Intervention" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="eligibility" type="prs:Eligibility" minOccurs="0" />
+    </xs:sequence>
+  </xs:complexType>
+  <!-- Define other complex types -->
+  <xs:complexType name="IdInfo">
+    <xs:sequence>
+      <xs:element name="org_name" type="xs:string" />
+      <xs:element name="org_study_id" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="TextBlock">
+    <xs:all>
+      <xs:element name="textblock" type="xs:string" />
+    </xs:all>
+  </xs:complexType>
+  <xs:complexType name="Sponsors">
+    <xs:sequence>
+      <xs:element name="lead_sponsor" type="prs:Agency" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="Agency">
+    <xs:all>
+      <xs:element name="agency" type="xs:string" />
+    </xs:all>
+  </xs:complexType>
+  <xs:complexType name="StudyDesign">
+    <xs:all>
+      <xs:element name="study_type" type="xs:string" />
+      <xs:element name="interventional_design" type="prs:InterventionalDesign" minOccurs="0" />
+    </xs:all>
+  </xs:complexType>
+  <xs:complexType name="InterventionalDesign">
+    <xs:all>
+      <xs:element name="interventional_subtype" type="xs:string" minOccurs="0" />
+      <xs:element name="phase" type="xs:string" minOccurs="0" />
+      <xs:element name="allocation" type="xs:string" minOccurs="0" />
+    </xs:all>
+  </xs:complexType>
+  <xs:complexType name="Intervention">
+    <xs:sequence>
+      <xs:element name="intervention_type" type="xs:string" minOccurs="0" />
+      <xs:element name="intervention_name" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="Eligibility">
+    <xs:all>
+      <xs:element name="criteria" type="prs:TextBlock" />
+      <xs:element name="gender" type="xs:string" />
+      <xs:element name="minimum_age" type="xs:string" />
+      <xs:element name="maximum_age" type="xs:string" />
+    </xs:all>
+  </xs:complexType>
+</xs:schema>

@@ -1,0 +1,72 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@100&display=swap'); 
+
+/*
+
+hu-purple: #7438C3;
+hu-alien-gray: #f1efed;
+hu-alien-light: #8f8e8e;
+hu-dark: #242424
+
+*/
+
+h1,h2,h3,h4,p,li {
+    font-family: "Manrope", sans-serif !important;
+    color: #242424;
+}
+
+h1 {
+    font-size: 36px !important;
+}
+h2 {
+    font-size: 18px !important;
+}
+h3 {
+    font-size: 26px !important;
+}
+
+p, li {
+    font-size: 14px !important;
+}
+
+#stDecoration {
+    display: none;
+}
+
+.stProgress .st-bo {
+    background-color: #7438C3;
+}
+
+.stChatInputContainer {
+    background: #f1efed;    
+}
+
+.stChatMessage {
+    background: #ffffff;
+}
+
+/* Button styles */
+.stButton>button {
+    border-radius: 20px;
+    border: 1px solid #242424;
+    background: #7438C3;
+    color: #ffffff;
+}
+.stButton>button>div>p {
+    color: #ffffff;
+}
+/* Widget styles */
+.stSlider, .stThumb, .stSelectbox, .stDateInput, .stTimeInput{
+}
+
+/* Spacing and Margins */
+.stMarkdown {
+    margin-bottom: 20px;
+}
+
+/* Code block styling */
+pre {
+    background-color: #242424;
+    color: #ffffff;
+    padding: 10px;
+    border-radius: 5px;
+}
