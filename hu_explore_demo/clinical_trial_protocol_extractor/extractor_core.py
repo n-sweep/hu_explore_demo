@@ -14,7 +14,7 @@ import docling
 from docling.document_converter import DocumentConverter
 
 #Logging
-logging.basicConfig(filename='test.log', level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 api_key = os.environ.get("API_KEY")
