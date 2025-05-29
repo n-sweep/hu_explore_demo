@@ -64,16 +64,16 @@ The app will have three main tabs:
 
 ### S3 Structure
 
-s3://<bucket>/
-├── raw/
-│   └── trial1.pdf, trial2.pdf, ...
-├── processed/
-│   └── trial1/
-│       ├── raw.pdf
-│       ├── summary.txt
-│       └── form_data.json
-├── table/
-│   └── trials.csv  <-- cumulative table, updated on every upload
+    s3://<bucket>/
+    ├── raw/
+    │   └── trial1.pdf, trial2.pdf, ...
+    ├── processed/
+    │   └── trial1/
+    │       ├── raw.pdf
+    │       ├── summary.txt
+    │       └── form_data.json
+    ├── table/
+    │   └── trials.csv  <-- cumulative table, updated on every upload
 
 
 ---
