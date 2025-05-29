@@ -204,24 +204,20 @@ with chat_tab:
         )
         st.session_state.messages = [{'role': 'system', 'content': system_prompt}]
 
+    if st.session_state.get("pending_response", False):
+        response = query_gpt(OPENAI_CLIENT, messages=st.session_state.messages)
+        st.session_state.messages.append({'role':'assistant', 'content': response})
+        st.session_state.pending_response = False
+        st.rerun()
+
+
     for message in st.session_state.messages:
         if (role:=message["role"]) != 'system':
             with st.chat_message(role):
                 st.markdown(message['content'])
 
-    st_chat = st.empty()
-
-    if usr_input:=st_chat.chat_input('Your Message'):
-
+    if usr_input:=st.chat_input('Your Message', key='chat_input'):
         st.session_state.messages.append({'role':'user', 'content': usr_input})
-
-        with st.chat_message('user'):
-            st.markdown(usr_input)
-
-        response = query_gpt(OPENAI_CLIENT, messages=st.session_state.messages)
-
-        st.session_state.messages.append({'role':'assistant', 'content': response})
-
-        with st.chat_message('assistant'):
-            st.markdown(response)
+        st.session_state.pending_response = True
+        st.rerun()
 
