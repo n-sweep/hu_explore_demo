@@ -82,7 +82,8 @@ def query_gpt(prompt: str, system_prompt: str, model: str = "gpt-4o", temperatur
         ],
         max_tokens=4096,
         temperature=temperature)
-        return response.choices[0].message.content.strip()
+        msg = response.choices[0].message
+        return msg#.content.strip()
     except Exception as e:
         # logger.error(f"Error querying GPT: {e}")
         return "Error in GPT query"
@@ -99,13 +100,22 @@ def generate_data_viewer_gpt_apply_func(user_prompt: str) -> Callable:
 
 
 # %%
+resp = query_gpt('test', 'you are a helpful assistant')
+
+# %%
+resp.model_dump_json()
+
+# %%
 df = s3_load_trials_csv(s3, BUCKET)
-prompt = 'hello this is a test'
+prompt = 'tell me anything you can about this data'
 row_data = str(df.iloc[0])
 
-res = data_viewer_query_gpt(prompt, row_data)
+func = generate_data_viewer_gpt_apply_func(prompt)
+res = func(row_data)
 print(res)
 
+# %%
+df.iloc[0]
 
 # %%
 bucket = boto3.resource('s3').Bucket(BUCKET)

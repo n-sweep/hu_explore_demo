@@ -53,25 +53,18 @@ DATA_VIEWER_ROWWISE_PROMPT = """
 """
 
 EXPLORE_SYSTEM_PROMPT = """You are an accurate and truthful data analyst and
-assistant. You will be given a table of data and a user prompt. Respond to the
-user prompt with regards to the data to the best of your ability. Admit when
-you don't know something."""
+assistant. Below is a table of data. Respond to the prompts with regards to the
+data to the best of your ability. Admit when you don't know something.
 
-EXPLORE_MESSAGE_PROMPT = """
 # Table Data
 
 ```
 {}
 ```
-
----
-
-# User Prompt
-
-{}
 """
 
 ### helper functions############################################################
+
 
 def s3_file_exists(client: BaseClient, bucket: str, key: str) -> bool:
     """Check if a key exists in a given bucket"""
@@ -98,16 +91,31 @@ def s3_load_trials_csv(_client: BaseClient, _bucket: str, _key: str = 'table/cli
     return pd.read_csv(StringIO(csv_data))
 
 
-def query_gpt(client: OpenAI, prompt: str, system_prompt: str, model: str = "gpt-4o", temperature: float = 0.0) -> str:
+def query_gpt(
+    client: OpenAI,
+    prompt: str|None = None,
+    system_prompt: str|None = None,
+    messages: list[dict]|None = None,
+    model: str = "gpt-4o",
+    temperature: float = 0.0
+) -> str:
+
+    if prompt and system_prompt:
+        messages = [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": prompt}
+            ]
+    elif not messages:
+        raise ValueError("ERROR: Either a prompt and system prompt or a list of messages must be provided")
+
     try:
         # Limit the maximum token output
-        response = client.chat.completions.create(model=model,
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": prompt}
-        ],
-        max_tokens=4096,
-        temperature=temperature)
+        response = client.chat.completions.create(
+            model=model,
+            messages=messages,
+            max_tokens=4096,
+            temperature=temperature
+        )
         return response.choices[0].message.content.strip()
     except Exception as e:
         logger.error(f"Error querying GPT: {e}")
@@ -187,27 +195,30 @@ with viewer_tab:
 ### streamlit explore chat #####################################################
 
 with chat_tab:
+
     st.header('Explore Chat')
 
     if "messages" not in st.session_state:
-        st.session_state.messages = []
+        system_prompt = EXPLORE_SYSTEM_PROMPT.format(
+            str(s3_load_trials_csv(S3_CLIENT, BUCKET))
+        )
+        st.session_state.messages = [{'role': 'system', 'content': system_prompt}]
 
     for message in st.session_state.messages:
-        with st.chat_message(message["role"]):
-            st.markdown(message['content'])
+        if (role:=message["role"]) != 'system':
+            with st.chat_message(role):
+                st.markdown(message['content'])
 
-    if usr_input:=st.chat_input('Your Message'):
+    st_chat = st.empty()
+
+    if usr_input:=st_chat.chat_input('Your Message'):
 
         st.session_state.messages.append({'role':'user', 'content': usr_input})
 
         with st.chat_message('user'):
             st.markdown(usr_input)
 
-        formatted_prompt = EXPLORE_MESSAGE_PROMPT.format(
-            str(s3_load_trials_csv(S3_CLIENT, BUCKET)),
-            usr_input
-        )
-        response = query_gpt(OPENAI_CLIENT, formatted_prompt, EXPLORE_SYSTEM_PROMPT)
+        response = query_gpt(OPENAI_CLIENT, messages=st.session_state.messages)
 
         st.session_state.messages.append({'role':'assistant', 'content': response})
 
