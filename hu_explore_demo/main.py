@@ -5,10 +5,8 @@ load_dotenv()
 
 from clinical_trial_protocol_extractor.extractor_core import process_pdf_to_xml
 
-print(' i am in hell')
 
-
-st.title('Streamlit POC')
+st.title('Explore Demo')
 
 upload_tab, viewer_tab, chat_tab = st.tabs(['Upload', 'Data View', 'Explore Chat'])
 
