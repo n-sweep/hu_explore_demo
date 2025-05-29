@@ -1,4 +1,3 @@
-import os
 import boto3
 import streamlit as st
 from io import BytesIO
@@ -16,8 +15,12 @@ s3_client = boto3.client('s3')
 def s3_file_exists(client, bucket, key):
     try:
         client.head_object(Bucket=bucket, Key=key)
+
+        return True
+
     except s3_client.exceptions.ClientError as e:
-        if e.response['Error']['Code'] == 404:
+
+        if e.response['Error']['Code'] == "404":
             return False
         else:
             raise
@@ -40,14 +43,17 @@ with upload_tab:
         if s3_file_exists(s3_client, BUCKET, raw_key):
             st.write(f'File already exists: {raw_key}')
         else:
-            s3_client.upload_fileobj(pdf, BUCKET, raw_key)
+            # s3_client.upload_fileobj(pdf, BUCKET, raw_key)
+            ...
 
-        if not s3_file_exists(s3_client, BUCKET, raw_key):
-            xml_bytes = process_pdf_to_xml(pdf.name).encode("utf-8")
+        if not s3_file_exists(s3_client, BUCKET, xml_key):
+            xml_str = process_pdf_to_xml(pdf.name, 'test.xml')
+            xml_bytes = xml_str.encode("utf-8")
             buffer = BytesIO(xml_bytes)
 
-            s3_client.upload_fileobj(buffer, BUCKET, xml_key)
+            # s3_client.upload_fileobj(buffer, BUCKET, xml_key)
 
+        break
 
 
 with viewer_tab:

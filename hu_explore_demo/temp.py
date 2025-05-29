@@ -50,7 +50,7 @@ for obj in bucket.objects.all():
 bucket = boto3.resource('s3').Bucket(BUCKET)
 for obj in bucket.objects.all():
     if obj.key.endswith('xml'):
-        s3.delete_object(Bucket=BUCKET, Key=obj.key)
+        # s3.delete_object(Bucket=BUCKET, Key=obj.key)
         print(obj.key)
 
 
