@@ -177,9 +177,11 @@ with upload_tab:
 ### streamlit data viewer ######################################################
 
 with viewer_tab:
-    st.header('Data Viewer')
-
     df = s3_load_trials_csv(S3_CLIENT, BUCKET)
+    if "active_filters" not in st.session_state:
+        st.session_state.active_filters = {}
+
+    st.header('Data Viewer')
 
     st.subheader('Search & Sort')
 
@@ -200,26 +202,52 @@ with viewer_tab:
 
     with filter_col:
         with st.expander('Filter columns'):
-            for col in df.select_dtypes(include='object').columns:
+            cols = [c for c in df.columns if c not in st.session_state.active_filters]
+            to_add = st.selectbox('Filter on column:', [""] + cols)
+            to_remove = []
+            filters = {}
+
+            if to_add:
+                st.session_state.active_filters[to_add] = []
+
+            for col, selected in st.session_state.active_filters.items():
                 unique_vals = df[col].dropna().unique().tolist()
-                if len(unique_vals) < 100:  # don't auto-filter huge cardinality columns
-                    selected_vals = st.multiselect(f"Filter `{col}`", unique_vals, default=unique_vals, key=f"filter_{col}")
-                    df = df[df[col].isin(selected_vals)]
+                selected = st.multiselect(
+                    f'Filter: {col}',
+                    options=unique_vals,
+                    default=selected,
+                    key=f'filter_{col}'
+                )
+
+                filters[col] = selected
+
+                if st.button('Remove', key=f'remove_{col}'):
+                    to_remove.append(col)
+
+            if to_remove:
+                for col in to_remove:
+                    del st.session_state.active_filters[col]
+                st.rerun()
 
     st.subheader('Chat')
     st_chat = st.empty()
 
     st.divider()
 
+    display_df = df.copy()
+    for col, selected in filters.items():
+        if selected:
+            display_df = display_df[display_df[col].isin(selected)]
+
     st_data = st.empty()
-    st_data.dataframe(df)
+    st_data.dataframe(display_df)
 
     if usr_input:=st_chat.chat_input("Generate a response for each row in the table..."):
         func = gpt_generate_data_viewer_apply_func(OPENAI_CLIENT, usr_input)
         timestamp = pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S')
         st.markdown(f'# Chat {timestamp}  \n```{usr_input}```')
-        df[timestamp] = df.apply(func, axis=1)
-        st_data.dataframe(df)
+        display_df[timestamp] = display_df.apply(func, axis=1)
+        st_data.dataframe(display_df)
 
 
 ### streamlit explore chat #####################################################
