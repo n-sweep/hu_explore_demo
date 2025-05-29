@@ -75,7 +75,7 @@ def s3_file_exists(client: BaseClient, bucket: str, key: str) -> bool:
 
     except client.exceptions.ClientError as e:
 
-        if e.response['Error']['Code'] == "404":
+        if e.response['Error']['Code'] == '404':
             return False
         else:
             raise
@@ -96,14 +96,14 @@ def query_gpt(
     prompt: str|None = None,
     system_prompt: str|None = None,
     messages: list[dict]|None = None,
-    model: str = "gpt-4o",
+    model: str = 'gpt-4o',
     temperature: float = 0.0
 ) -> str:
 
     if prompt and system_prompt:
         messages = [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": prompt}
+                {'role': 'system', 'content': system_prompt},
+                {'role': 'user', 'content': prompt}
             ]
     elif not messages:
         raise ValueError("ERROR: Either a prompt and system prompt or a list of messages must be provided")
@@ -178,15 +178,45 @@ with upload_tab:
 
 with viewer_tab:
     st.header('Data Viewer')
-    usr_input = st.chat_input("Get a response for each row in the table...")
 
     df = s3_load_trials_csv(S3_CLIENT, BUCKET)
+
+    st.subheader('Search & Sort')
+
+    search_col, sort_col, filter_col = st.columns([1, 1, 1])
+
+    with search_col:
+        with st.expander('Text Search'):
+            search = st.text_input("Search all fields...")
+            if search:
+                mask = df.apply(lambda x: x.astype(str).str.contains(search, case=False).any(), axis=1)
+                df = df[mask]
+
+    with sort_col:
+        with st.expander('Sort options'):
+            sort_col = st.selectbox('Sort by', df.columns, key='sort_col')
+            sort_order = st.radio('Order', ['Ascending', 'Descending'], horizontal=True, key='sort_order')
+            df = df.sort_values(by=sort_col, ascending=(sort_order == 'Ascending'))
+
+    with filter_col:
+        with st.expander('Filter columns'):
+            for col in df.select_dtypes(include='object').columns:
+                unique_vals = df[col].dropna().unique().tolist()
+                if len(unique_vals) < 100:  # don't auto-filter huge cardinality columns
+                    selected_vals = st.multiselect(f"Filter `{col}`", unique_vals, default=unique_vals, key=f"filter_{col}")
+                    df = df[df[col].isin(selected_vals)]
+
+    st.subheader('Chat')
+    st_chat = st.empty()
+
+    st.divider()
+
     st_data = st.empty()
     st_data.dataframe(df)
 
-    if usr_input:
+    if usr_input:=st_chat.chat_input("Generate a response for each row in the table..."):
         func = gpt_generate_data_viewer_apply_func(OPENAI_CLIENT, usr_input)
-        timestamp = pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S")
+        timestamp = pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S')
         st.markdown(f'# Chat {timestamp}  \n```{usr_input}```')
         df[timestamp] = df.apply(func, axis=1)
         st_data.dataframe(df)
@@ -197,26 +227,32 @@ with viewer_tab:
 with chat_tab:
 
     st.header('Explore Chat')
+    df = s3_load_trials_csv(S3_CLIENT, BUCKET)
 
-    if "messages" not in st.session_state:
-        system_prompt = EXPLORE_SYSTEM_PROMPT.format(
-            str(s3_load_trials_csv(S3_CLIENT, BUCKET))
-        )
+    st.subheader('Data')
+    with st.expander('Expand Table', expanded=True):
+        st.dataframe(df)
+
+    if 'messages' not in st.session_state:
+        system_prompt = EXPLORE_SYSTEM_PROMPT.format(str(df))
         st.session_state.messages = [{'role': 'system', 'content': system_prompt}]
 
-    if st.session_state.get("pending_response", False):
+    if st.session_state.get('pending_response', False):
         response = query_gpt(OPENAI_CLIENT, messages=st.session_state.messages)
         st.session_state.messages.append({'role':'assistant', 'content': response})
         st.session_state.pending_response = False
         st.rerun()
 
+    st.divider()
+
+    st.subheader('Chat')
 
     for message in st.session_state.messages:
-        if (role:=message["role"]) != 'system':
+        if (role:=message['role']) != 'system':
             with st.chat_message(role):
                 st.markdown(message['content'])
 
-    if usr_input:=st.chat_input('Your Message', key='chat_input'):
+    if usr_input:=st.chat_input('Ask questions about this table...'):
         st.session_state.messages.append({'role':'user', 'content': usr_input})
         st.session_state.pending_response = True
         st.rerun()
