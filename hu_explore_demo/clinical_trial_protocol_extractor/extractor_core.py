@@ -23,7 +23,6 @@ if not api_key:
 
 client = OpenAI(api_key=api_key)
 
-
 def extract_text_from_pdf(pdf_path: str) -> str:
 
     logger.info("Extracting text from PDF using docling DocumentConverter...")
