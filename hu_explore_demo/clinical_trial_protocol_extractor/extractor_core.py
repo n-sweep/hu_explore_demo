@@ -3,7 +3,7 @@ import json
 import sys
 import xml.etree.ElementTree as ET
 import xml.dom.minidom as minidom
-import openai
+from openai import OpenAI
 import tempfile
 import argparse
 import logging
@@ -17,12 +17,12 @@ from docling.document_converter import DocumentConverter
 logging.basicConfig(filename='test.log', level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-
 api_key = os.environ.get("API_KEY")
 if not api_key:
     raise ValueError("API_KEY environment variable not set")
 
-openai.api_key = api_key
+client = OpenAI(api_key=api_key)
+
 
 def extract_text_from_pdf(pdf_path: str) -> str:
 
@@ -102,15 +102,13 @@ def chunk_text(text: str) -> List[str]:
 def query_gpt(prompt: str, model: str = "gpt-4o", temperature: float = 0.0) -> str:
     try:
         # Limit the maximum token output
-        response = openai.ChatCompletion.create(
-            model=model,
-            messages=[
-                {"role": "system", "content": "You are a protocol analyzer that helps extract structured information from clinical trial protocols. Always return valid JSON when requested, with no explanations or apologies."},
-                {"role": "user", "content": prompt}
-            ],
-            max_tokens=4096,
-            temperature=temperature
-        )
+        response = client.chat.completions.create(model=model,
+        messages=[
+            {"role": "system", "content": "You are a protocol analyzer that helps extract structured information from clinical trial protocols. Always return valid JSON when requested, with no explanations or apologies."},
+            {"role": "user", "content": prompt}
+        ],
+        max_tokens=4096,
+        temperature=temperature)
         return response.choices[0].message.content.strip()
     except Exception as e:
         logger.error(f"Error querying GPT: {e}")
